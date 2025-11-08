@@ -2,9 +2,13 @@ package dev.dsa.controller;
 
 import dev.dsa.entity.Customer;
 import dev.dsa.service.CustomerService;
+import dev.dsa.service.UserProfileService;
+import dev.dsa.util.PaginationUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -19,11 +23,27 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class CustomerController {
 
     private final CustomerService customerService;
+    private final UserProfileService userProfileService;
 
     @GetMapping
     @PreAuthorize("hasAnyAuthority('CUSTOMER_READ', 'CUSTOMER_WRITE')")
-    public String listCustomers(Model model) {
-        model.addAttribute("customers", customerService.getAllCustomers());
+    public String listCustomers(@RequestParam(defaultValue = "0") int page,
+                               @RequestParam(required = false) Integer size,
+                               Model model) {
+        // Get user's preferred page size
+        int userPageSize = userProfileService.getCurrentUserPageSize();
+
+        // Create pageable (developer can override by passing size parameter)
+        Pageable pageable = PaginationUtil.createPageableWithUserPreference(page, userPageSize, size);
+
+        // Get customers with pagination
+        Page<Customer> customerPage = customerService.getAllCustomersWithPagination(pageable);
+
+        model.addAttribute("customers", customerPage.getContent());
+        model.addAttribute("page", customerPage);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", customerPage.getTotalPages());
+        model.addAttribute("totalElements", customerPage.getTotalElements());
         return "customers/list";
     }
 

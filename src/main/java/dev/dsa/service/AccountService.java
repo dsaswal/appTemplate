@@ -10,6 +10,8 @@ import dev.dsa.repository.CustomerRepository;
 import dev.dsa.specification.AccountSpecification;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -118,5 +120,17 @@ public class AccountService {
 
         Specification<Account> specification = AccountSpecification.withSearchCriteria(searchRequest);
         return accountRepository.findAll(specification);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<Account> searchAccountsWithPagination(AccountSearchRequest searchRequest, Pageable pageable) {
+        log.info("Searching accounts with criteria: {} and pagination: {}", searchRequest, pageable);
+
+        if (searchRequest == null || searchRequest.isEmpty()) {
+            return accountRepository.findAll(pageable);
+        }
+
+        Specification<Account> specification = AccountSpecification.withSearchCriteria(searchRequest);
+        return accountRepository.findAll(specification, pageable);
     }
 }

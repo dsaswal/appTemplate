@@ -5,6 +5,8 @@ import dev.dsa.exception.ResourceNotFoundException;
 import dev.dsa.repository.CustomerRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -88,5 +90,17 @@ public class CustomerService {
     @Transactional(readOnly = true)
     public List<Customer> searchCustomersByName(String name) {
         return customerRepository.findByNameContainingIgnoreCase(name);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<Customer> getAllCustomersWithPagination(Pageable pageable) {
+        log.info("Getting customers with pagination: {}", pageable);
+        return customerRepository.findAll(pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<Customer> getActiveCustomersWithPagination(Pageable pageable) {
+        log.info("Getting active customers with pagination: {}", pageable);
+        return customerRepository.findByActive(true, pageable);
     }
 }

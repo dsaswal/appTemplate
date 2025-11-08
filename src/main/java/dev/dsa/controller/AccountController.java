@@ -6,9 +6,13 @@ import dev.dsa.entity.Account;
 import dev.dsa.entity.Customer;
 import dev.dsa.service.AccountService;
 import dev.dsa.service.CustomerService;
+import dev.dsa.service.UserProfileService;
+import dev.dsa.util.PaginationUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -26,19 +30,29 @@ public class AccountController {
 
     private final AccountService accountService;
     private final CustomerService customerService;
+    private final UserProfileService userProfileService;
 
     @GetMapping
     @PreAuthorize("hasAnyAuthority('ACCOUNT_READ', 'ACCOUNT_WRITE')")
-    public String listAccounts(@ModelAttribute AccountSearchRequest searchRequest, Model model) {
-        List<Account> accounts;
+    public String listAccounts(@ModelAttribute AccountSearchRequest searchRequest,
+                               @RequestParam(defaultValue = "0") int page,
+                               @RequestParam(required = false) Integer size,
+                               Model model) {
 
-        if (searchRequest == null || searchRequest.isEmpty()) {
-            accounts = accountService.getAllAccounts();
-        } else {
-            accounts = accountService.searchAccounts(searchRequest);
-        }
+        // Get user's preferred page size
+        int userPageSize = userProfileService.getCurrentUserPageSize();
 
-        model.addAttribute("accounts", accounts);
+        // Create pageable (developer can override size here if needed - pass null to use user preference)
+        Pageable pageable = PaginationUtil.createPageableWithUserPreference(page, userPageSize, size);
+
+        // Search with pagination
+        Page<Account> accountPage = accountService.searchAccountsWithPagination(searchRequest, pageable);
+
+        model.addAttribute("accounts", accountPage.getContent());
+        model.addAttribute("page", accountPage);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", accountPage.getTotalPages());
+        model.addAttribute("totalElements", accountPage.getTotalElements());
         model.addAttribute("searchRequest", searchRequest != null ? searchRequest : new AccountSearchRequest());
         model.addAttribute("statuses", Account.AccountStatus.values());
         return "accounts/list";
@@ -46,8 +60,11 @@ public class AccountController {
 
     @GetMapping("/search")
     @PreAuthorize("hasAnyAuthority('ACCOUNT_READ', 'ACCOUNT_WRITE')")
-    public String searchAccounts(@ModelAttribute AccountSearchRequest searchRequest, Model model) {
-        return listAccounts(searchRequest, model);
+    public String searchAccounts(@ModelAttribute AccountSearchRequest searchRequest,
+                                 @RequestParam(defaultValue = "0") int page,
+                                 @RequestParam(required = false) Integer size,
+                                 Model model) {
+        return listAccounts(searchRequest, page, size, model);
     }
 
     @GetMapping("/customer/{customerId}")

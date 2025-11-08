@@ -5,6 +5,7 @@ import dev.dsa.entity.Permission;
 import dev.dsa.entity.Role;
 import dev.dsa.entity.User;
 import dev.dsa.repository.*;
+import dev.dsa.service.UserProfileService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -24,6 +25,7 @@ public class DataInitializer implements CommandLineRunner {
     private final RoleRepository roleRepository;
     private final PermissionRepository permissionRepository;
     private final CustomerRepository customerRepository;
+    private final UserProfileService userProfileService;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -75,20 +77,24 @@ public class DataInitializer implements CommandLineRunner {
         User admin = createUser("admin", "admin123", "admin@example.com", "Admin", "User");
         admin.getRoles().add(adminRole);
         userRepository.save(admin);
+        userProfileService.createDefaultProfile(admin);
 
         User manager = createUser("manager", "manager123", "manager@example.com", "Manager", "User");
         manager.getRoles().add(managerRole);
         userRepository.save(manager);
+        userProfileService.createDefaultProfile(manager);
 
         User csrep = createUser("csrep", "csrep123", "csrep@example.com", "Customer Service", "Rep");
         csrep.getRoles().add(customerServiceRole);
         userRepository.save(csrep);
+        userProfileService.createDefaultProfile(csrep);
 
         User basicUser = createUser("user", "user123", "user@example.com", "Basic", "User");
         basicUser.getRoles().add(userRole);
         userRepository.save(basicUser);
+        userProfileService.createDefaultProfile(basicUser);
 
-        log.info("Created {} users", userRepository.count());
+        log.info("Created {} users with profiles", userRepository.count());
 
         // Create Sample Customers
         createCustomer("John Doe", "john.doe@example.com", "555-0101", "123 Main St, Springfield", "admin");
