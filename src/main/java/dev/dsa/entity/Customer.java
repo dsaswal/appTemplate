@@ -58,6 +58,8 @@ public class Customer extends Auditable {
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", email='" + email + '\'' +
+                ", phone='" + phone + '\'' +
+                ", address='" + address + '\'' +
                 ", active=" + active +
                 '}';
     }
