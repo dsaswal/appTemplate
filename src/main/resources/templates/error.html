@@ -45,9 +45,9 @@
                                 <strong>Status Code:</strong>
                                 <span th:text="${statusCode} ?: '500'">500</span>
                             </p>
-                            <p class="mb-0">
+                            <p class="mb-0" th:if="${timestamp != null}">
                                 <strong>Timestamp:</strong>
-                                <span th:text="${timestamp != null ? #temporals.format(timestamp, 'yyyy-MM-dd HH:mm:ss') : ''}"></span>
+                                <span th:text="${#temporals.format(timestamp, 'yyyy-MM-dd HH:mm:ss')}"></span>
                             </p>
                         </div>
 
