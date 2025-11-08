@@ -1,5 +1,6 @@
 package dev.dsa.controller;
 
+import dev.dsa.dto.AccountSearchRequest;
 import dev.dsa.dto.AccountUpdateRequest;
 import dev.dsa.entity.Account;
 import dev.dsa.entity.Customer;
@@ -15,6 +16,8 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.List;
+
 @Controller
 @RequestMapping("/accounts")
 @RequiredArgsConstructor
@@ -26,9 +29,25 @@ public class AccountController {
 
     @GetMapping
     @PreAuthorize("hasAnyAuthority('ACCOUNT_READ', 'ACCOUNT_WRITE')")
-    public String listAccounts(Model model) {
-        model.addAttribute("accounts", accountService.getAllAccounts());
+    public String listAccounts(@ModelAttribute AccountSearchRequest searchRequest, Model model) {
+        List<Account> accounts;
+
+        if (searchRequest == null || searchRequest.isEmpty()) {
+            accounts = accountService.getAllAccounts();
+        } else {
+            accounts = accountService.searchAccounts(searchRequest);
+        }
+
+        model.addAttribute("accounts", accounts);
+        model.addAttribute("searchRequest", searchRequest != null ? searchRequest : new AccountSearchRequest());
+        model.addAttribute("statuses", Account.AccountStatus.values());
         return "accounts/list";
+    }
+
+    @GetMapping("/search")
+    @PreAuthorize("hasAnyAuthority('ACCOUNT_READ', 'ACCOUNT_WRITE')")
+    public String searchAccounts(@ModelAttribute AccountSearchRequest searchRequest, Model model) {
+        return listAccounts(searchRequest, model);
     }
 
     @GetMapping("/customer/{customerId}")

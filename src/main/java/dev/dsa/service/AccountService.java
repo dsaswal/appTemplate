@@ -1,13 +1,16 @@
 package dev.dsa.service;
 
+import dev.dsa.dto.AccountSearchRequest;
 import dev.dsa.entity.Account;
 import dev.dsa.entity.Customer;
 import dev.dsa.exception.BusinessException;
 import dev.dsa.exception.ResourceNotFoundException;
 import dev.dsa.repository.AccountRepository;
 import dev.dsa.repository.CustomerRepository;
+import dev.dsa.specification.AccountSpecification;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -103,5 +106,17 @@ public class AccountService {
     @Transactional(readOnly = true)
     public Optional<Account> getAccountByRef(String accountRef) {
         return accountRepository.findByAccountRef(accountRef);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Account> searchAccounts(AccountSearchRequest searchRequest) {
+        log.info("Searching accounts with criteria: {}", searchRequest);
+
+        if (searchRequest == null || searchRequest.isEmpty()) {
+            return getAllAccounts();
+        }
+
+        Specification<Account> specification = AccountSpecification.withSearchCriteria(searchRequest);
+        return accountRepository.findAll(specification);
     }
 }
