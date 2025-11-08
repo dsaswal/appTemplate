@@ -1,8 +1,8 @@
 package dev.dsa.controller;
 
 import dev.dsa.entity.RoleProfile;
+import dev.dsa.repository.RoleRepository;
 import dev.dsa.service.RoleProfileService;
-import dev.dsa.service.RoleService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +24,7 @@ import java.util.Set;
 public class RoleProfileController {
 
     private final RoleProfileService roleProfileService;
-    private final RoleService roleService;
+    private final RoleRepository roleRepository;
 
     @GetMapping
     public String listProfiles(Model model) {
@@ -37,7 +37,7 @@ public class RoleProfileController {
     public String newProfileForm(Model model) {
         log.info("Showing new profile form");
         model.addAttribute("profile", new RoleProfile());
-        model.addAttribute("allRoles", roleService.getAllRoles());
+        model.addAttribute("allRoles", roleRepository.findAll());
         return "admin/profiles/form";
     }
 
@@ -50,7 +50,7 @@ public class RoleProfileController {
         log.info("Creating profile: {}", profile.getName());
 
         if (result.hasErrors()) {
-            model.addAttribute("allRoles", roleService.getAllRoles());
+            model.addAttribute("allRoles", roleRepository.findAll());
             return "admin/profiles/form";
         }
 
@@ -61,7 +61,7 @@ public class RoleProfileController {
         } catch (IllegalArgumentException e) {
             log.error("Error creating profile", e);
             model.addAttribute("error", e.getMessage());
-            model.addAttribute("allRoles", roleService.getAllRoles());
+            model.addAttribute("allRoles", roleRepository.findAll());
             return "admin/profiles/form";
         }
     }
@@ -72,7 +72,7 @@ public class RoleProfileController {
         RoleProfile profile = roleProfileService.getProfileById(id)
             .orElseThrow(() -> new RuntimeException("Profile not found"));
         model.addAttribute("profile", profile);
-        model.addAttribute("allRoles", roleService.getAllRoles());
+        model.addAttribute("allRoles", roleRepository.findAll());
         return "admin/profiles/form";
     }
 
@@ -86,7 +86,7 @@ public class RoleProfileController {
         log.info("Updating profile: {}", id);
 
         if (result.hasErrors()) {
-            model.addAttribute("allRoles", roleService.getAllRoles());
+            model.addAttribute("allRoles", roleRepository.findAll());
             return "admin/profiles/form";
         }
 
@@ -97,7 +97,7 @@ public class RoleProfileController {
         } catch (IllegalArgumentException e) {
             log.error("Error updating profile", e);
             model.addAttribute("error", e.getMessage());
-            model.addAttribute("allRoles", roleService.getAllRoles());
+            model.addAttribute("allRoles", roleRepository.findAll());
             model.addAttribute("profile", profile);
             return "admin/profiles/form";
         }
