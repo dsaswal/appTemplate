@@ -63,7 +63,7 @@ public class PermissionApiController {
         Permission permission = rbacService.getPermissionById(id)
             .orElseThrow(() -> new dev.dsa.exception.ResourceNotFoundException("Permission", id));
 
-        Permission updated = rbacService.updatePermission(id, null, null, !permission.isActive());
+        Permission updated = rbacService.updatePermission(id, null, null, !permission.getActive());
         return ResponseEntity.ok(ApiResponse.success("Permission toggled successfully", updated));
     }
 }

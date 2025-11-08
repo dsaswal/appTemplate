@@ -64,9 +64,12 @@ public class AccountApiController {
 
     @PostMapping
     @PreAuthorize("hasAuthority('ACCOUNT_WRITE')")
-    public ResponseEntity<ApiResponse<Account>> createAccount(@Valid @RequestBody Account account) {
-        log.info("API: Creating account for customer: {}", account.getCustomer().getId());
-        Account created = accountService.createAccount(account);
+    public ResponseEntity<ApiResponse<Account>> createAccount(
+        @Valid @RequestBody Account account,
+        @RequestParam Long customerId) {
+
+        log.info("API: Creating account for customer: {}", customerId);
+        Account created = accountService.createAccount(account, customerId);
         return ResponseEntity.ok(ApiResponse.success("Account created successfully", created));
     }
 
