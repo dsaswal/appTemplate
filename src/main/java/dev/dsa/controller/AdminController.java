@@ -160,8 +160,10 @@ public class AdminController {
         return "admin/role-edit";
     }
 
-    @PostMapping("/roles/{roleId}/permissions/{permissionId}/add")
-    public String addPermissionToRole(@PathVariable Long roleId, @PathVariable Long permissionId, RedirectAttributes redirectAttributes) {
+    @PostMapping("/roles/{roleId}/permissions/add")
+    public String addPermissionToRole(@PathVariable Long roleId,
+                                     @RequestParam Long permissionId,
+                                     RedirectAttributes redirectAttributes) {
         try {
             rbacService.addPermissionToRole(roleId, permissionId);
             redirectAttributes.addFlashAttribute("success", "Permission added to role");
@@ -172,8 +174,10 @@ public class AdminController {
         return "redirect:/admin/roles/" + roleId + "/edit";
     }
 
-    @PostMapping("/roles/{roleId}/permissions/{permissionId}/remove")
-    public String removePermissionFromRole(@PathVariable Long roleId, @PathVariable Long permissionId, RedirectAttributes redirectAttributes) {
+    @PostMapping("/roles/{roleId}/permissions/remove")
+    public String removePermissionFromRole(@PathVariable Long roleId,
+                                          @RequestParam Long permissionId,
+                                          RedirectAttributes redirectAttributes) {
         try {
             rbacService.removePermissionFromRole(roleId, permissionId);
             redirectAttributes.addFlashAttribute("success", "Permission removed from role");

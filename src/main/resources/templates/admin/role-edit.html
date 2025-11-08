@@ -24,8 +24,9 @@
                 <div th:unless="${role.permissions.isEmpty()}">
                     <div th:each="perm : ${role.permissions}" class="d-inline-block me-2 mb-2">
                         <span class="badge bg-primary me-1" th:text="${perm.name}"></span>
-                        <form th:action="@{/admin/roles/{roleId}/permissions/{permId}/remove(roleId=${role.id},permId=${perm.id})}"
+                        <form th:action="@{/admin/roles/{roleId}/permissions/remove(roleId=${role.id})}"
                               method="post" style="display: inline;">
+                            <input type="hidden" name="permissionId" th:value="${perm.id}">
                             <button type="submit" class="btn btn-sm btn-danger">
                                 <i class="fas fa-times"></i>
                             </button>
@@ -34,7 +35,7 @@
                 </div>
                 <hr>
                 <h6>Add Permission</h6>
-                <form th:action="@{/admin/roles/{roleId}/permissions/{permId}/add(roleId=${role.id})}" method="post" class="row g-2">
+                <form th:action="@{/admin/roles/{roleId}/permissions/add(roleId=${role.id})}" method="post" class="row g-2">
                     <div class="col-auto">
                         <select name="permissionId" class="form-select" required>
                             <option value="">Select Permission...</option>
