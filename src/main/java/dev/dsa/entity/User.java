@@ -55,6 +55,14 @@ public class User {
     )
     private Set<Role> roles = new HashSet<>();
 
+    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(
+        name = "user_profiles",
+        joinColumns = @JoinColumn(name = "user_id"),
+        inverseJoinColumns = @JoinColumn(name = "profile_id")
+    )
+    private Set<RoleProfile> roleProfiles = new HashSet<>();
+
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private UserProfile profile;
 
@@ -79,13 +87,33 @@ public class User {
     }
 
     /**
-     * Get all permissions from all assigned roles (including inherited)
+     * Get all permissions from all assigned roles and profiles (including inherited)
+     * Priority: Direct roles + Profile roles + Inherited permissions
      */
     public Set<Permission> getAllPermissions() {
         Set<Permission> allPermissions = new HashSet<>();
+
+        // Add permissions from direct roles
         for (Role role : roles) {
             allPermissions.addAll(role.getAllPermissions());
         }
+
+        // Add permissions from role profiles
+        for (RoleProfile roleProfile : roleProfiles) {
+            allPermissions.addAll(roleProfile.getAllPermissions());
+        }
+
         return allPermissions;
+    }
+
+    /**
+     * Get all roles (direct + from profiles)
+     */
+    public Set<Role> getAllRoles() {
+        Set<Role> allRoles = new HashSet<>(roles);
+        for (RoleProfile roleProfile : roleProfiles) {
+            allRoles.addAll(roleProfile.getRoles());
+        }
+        return allRoles;
     }
 }

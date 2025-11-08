@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${profile.id != null ? 'Edit Profile' : 'New Profile'}">Profile Form</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div th:replace="fragments/navigation :: navbar"></div>
+
+    <div class="container mt-4">
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+            <i class="fas fa-exclamation-circle"></i> <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>
+                <i class="fas fa-id-card"></i>
+                <span th:text="${profile.id != null ? 'Edit Profile' : 'New Profile'}">New Profile</span>
+            </h2>
+            <a th:href="@{/admin/profiles}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to List
+            </a>
+        </div>
+
+        <form th:action="${profile.id != null ? '/admin/profiles/' + profile.id : '/admin/profiles'}"
+              th:object="${profile}" method="post">
+
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> Profile Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Profile Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="name" th:field="*{name}"
+                               th:classappend="${#fields.hasErrors('name')} ? 'is-invalid'" required>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">
+                            Name error
+                        </div>
+                        <div class="form-text">e.g., "Sales Manager", "Regional Director"</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" th:field="*{description}" rows="3"
+                                  th:classappend="${#fields.hasErrors('description')} ? 'is-invalid'"></textarea>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('description')}" th:errors="*{description}">
+                            Description error
+                        </div>
+                        <div class="form-text">Describe what this profile is for</div>
+                    </div>
+
+                    <div class="mb-3 form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="active" th:field="*{active}">
+                        <label class="form-check-label" for="active">
+                            Active
+                        </label>
+                        <div class="form-text">Only active profiles can be assigned to users</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-users-cog"></i> Roles in Profile</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Select the roles to include in this profile:</p>
+
+                    <div th:if="${#lists.isEmpty(allRoles)}" class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i> No roles available. Please create roles first.
+                    </div>
+
+                    <div class="row" th:if="${!#lists.isEmpty(allRoles)}">
+                        <div class="col-md-6" th:each="role : ${allRoles}">
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="roleIds"
+                                               th:value="${role.id}" th:id="'role-' + ${role.id}"
+                                               th:checked="${profile.roles != null && profile.roles.contains(role)}">
+                                        <label class="form-check-label" th:for="'role-' + ${role.id}">
+                                            <strong th:text="${role.name}">ROLE_NAME</strong>
+                                            <br>
+                                            <small class="text-muted" th:text="${role.description}">Role description</small>
+                                            <br>
+                                            <small class="text-info">
+                                                <span th:text="${#sets.size(role.getAllPermissions())}">0</span> permissions
+                                            </small>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4 mb-4">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i>
+                    <span th:text="${profile.id != null ? 'Update Profile' : 'Create Profile'}">Save</span>
+                </button>
+                <a th:href="@{/admin/profiles}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

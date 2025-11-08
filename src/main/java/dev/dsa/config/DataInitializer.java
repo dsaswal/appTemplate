@@ -3,6 +3,7 @@ package dev.dsa.config;
 import dev.dsa.entity.Customer;
 import dev.dsa.entity.Permission;
 import dev.dsa.entity.Role;
+import dev.dsa.entity.RoleProfile;
 import dev.dsa.entity.User;
 import dev.dsa.repository.*;
 import dev.dsa.service.UserProfileService;
@@ -25,6 +26,7 @@ public class DataInitializer implements CommandLineRunner {
     private final RoleRepository roleRepository;
     private final PermissionRepository permissionRepository;
     private final CustomerRepository customerRepository;
+    private final RoleProfileRepository roleProfileRepository;
     private final UserProfileService userProfileService;
     private final PasswordEncoder passwordEncoder;
 
@@ -73,6 +75,27 @@ public class DataInitializer implements CommandLineRunner {
 
         log.info("Created {} roles", roleRepository.count());
 
+        // Create Role Profiles (combining multiple roles)
+        RoleProfile salesManagerProfile = createRoleProfile(
+            "SALES_MANAGER",
+            "Sales Manager with customer and account management",
+            Set.of(managerRole, customerServiceRole)
+        );
+
+        RoleProfile customerSupportProfile = createRoleProfile(
+            "CUSTOMER_SUPPORT",
+            "Customer support with read access",
+            Set.of(customerServiceRole, userRole)
+        );
+
+        RoleProfile dataAnalystProfile = createRoleProfile(
+            "DATA_ANALYST",
+            "Data analyst with read-only access to all entities",
+            Set.of(userRole)
+        );
+
+        log.info("Created {} role profiles", roleProfileRepository.count());
+
         // Create Users
         User admin = createUser("admin", "admin123", "admin@example.com", "Admin", "User");
         admin.getRoles().add(adminRole);
@@ -81,11 +104,13 @@ public class DataInitializer implements CommandLineRunner {
 
         User manager = createUser("manager", "manager123", "manager@example.com", "Manager", "User");
         manager.getRoles().add(managerRole);
+        manager.getRoleProfiles().add(salesManagerProfile); // Example: assign profile to user
         userRepository.save(manager);
         userProfileService.createDefaultProfile(manager);
 
         User csrep = createUser("csrep", "csrep123", "csrep@example.com", "Customer Service", "Rep");
         csrep.getRoles().add(customerServiceRole);
+        csrep.getRoleProfiles().add(customerSupportProfile); // Example: assign profile to user
         userRepository.save(csrep);
         userProfileService.createDefaultProfile(csrep);
 
@@ -108,13 +133,18 @@ public class DataInitializer implements CommandLineRunner {
         log.info("=== Data Initialization Complete ===");
         log.info("Login Credentials:");
         log.info("  Admin:    username=admin, password=admin123");
-        log.info("  Manager:  username=manager, password=manager123");
-        log.info("  CS Rep:   username=csrep, password=csrep123");
+        log.info("  Manager:  username=manager, password=manager123 (has SALES_MANAGER profile)");
+        log.info("  CS Rep:   username=csrep, password=csrep123 (has CUSTOMER_SUPPORT profile)");
         log.info("  User:     username=user, password=user123");
         log.info("");
         log.info("Role Inheritance:");
         log.info("  ADMIN -> MANAGER -> CUSTOMER_SERVICE -> USER");
         log.info("  (Each role inherits all permissions from its parent)");
+        log.info("");
+        log.info("Role Profiles:");
+        log.info("  SALES_MANAGER: Combines MANAGER + CUSTOMER_SERVICE roles");
+        log.info("  CUSTOMER_SUPPORT: Combines CUSTOMER_SERVICE + USER roles");
+        log.info("  DATA_ANALYST: Read-only access profile");
         log.info("====================================");
     }
 
@@ -159,6 +189,7 @@ public class DataInitializer implements CommandLineRunner {
             .accountNonLocked(true)
             .credentialsNonExpired(true)
             .roles(new HashSet<>())
+            .roleProfiles(new HashSet<>())
             .build();
         return user;
     }
@@ -176,5 +207,18 @@ public class DataInitializer implements CommandLineRunner {
             .build();
         // createdBy and updatedBy are set automatically by JPA auditing
         customerRepository.save(customer);
+    }
+
+    private RoleProfile createRoleProfile(String name, String description, Set<Role> roles) {
+        if (roleProfileRepository.findByName(name).isPresent()) {
+            return roleProfileRepository.findByName(name).get();
+        }
+        RoleProfile profile = RoleProfile.builder()
+            .name(name)
+            .description(description)
+            .active(true)
+            .roles(roles)
+            .build();
+        return roleProfileRepository.save(profile);
     }
 }
