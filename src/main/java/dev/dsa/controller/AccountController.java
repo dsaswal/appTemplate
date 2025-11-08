@@ -1,5 +1,6 @@
 package dev.dsa.controller;
 
+import dev.dsa.dto.AccountUpdateRequest;
 import dev.dsa.entity.Account;
 import dev.dsa.entity.Customer;
 import dev.dsa.service.AccountService;
@@ -80,7 +81,16 @@ public class AccountController {
     public String editAccountForm(@PathVariable Long id, Model model) {
         Account account = accountService.getAccountById(id)
             .orElseThrow(() -> new RuntimeException("Account not found"));
+
+        // Create DTO from existing account
+        AccountUpdateRequest updateRequest = AccountUpdateRequest.builder()
+            .accountName(account.getAccountName())
+            .currency(account.getCurrency())
+            .status(account.getStatus())
+            .build();
+
         model.addAttribute("account", account);
+        model.addAttribute("accountUpdate", updateRequest);
         model.addAttribute("statuses", Account.AccountStatus.values());
         return "accounts/edit";
     }
@@ -88,22 +98,40 @@ public class AccountController {
     @PostMapping("/{id}")
     @PreAuthorize("hasAuthority('ACCOUNT_WRITE')")
     public String updateAccount(@PathVariable Long id,
-                               @Valid @ModelAttribute Account account,
+                               @Valid @ModelAttribute("accountUpdate") AccountUpdateRequest accountUpdate,
                                BindingResult result,
                                Model model,
                                RedirectAttributes redirectAttributes) {
         if (result.hasErrors()) {
+            Account account = accountService.getAccountById(id).orElseThrow();
+            model.addAttribute("account", account);
             model.addAttribute("statuses", Account.AccountStatus.values());
             return "accounts/edit";
         }
 
         try {
+            // Get existing account to preserve customer relationship
             Account existingAccount = accountService.getAccountById(id).orElseThrow();
-            accountService.updateAccount(id, account);
+
+            // Create account object with updated fields
+            Account accountToUpdate = Account.builder()
+                .accountName(accountUpdate.getAccountName())
+                .currency(accountUpdate.getCurrency())
+                .status(accountUpdate.getStatus())
+                .build();
+
+            accountService.updateAccount(id, accountToUpdate);
             redirectAttributes.addFlashAttribute("success", "Account updated successfully");
             return "redirect:/accounts/customer/" + existingAccount.getCustomer().getId();
         } catch (Exception e) {
             log.error("Error updating account", e);
+            Account account = accountService.getAccountById(id).orElse(null);
+            if (account != null) {
+                model.addAttribute("account", account);
+                model.addAttribute("statuses", Account.AccountStatus.values());
+                model.addAttribute("error", e.getMessage());
+                return "accounts/edit";
+            }
             redirectAttributes.addFlashAttribute("error", e.getMessage());
             return "redirect:/accounts/" + id + "/edit";
         }
