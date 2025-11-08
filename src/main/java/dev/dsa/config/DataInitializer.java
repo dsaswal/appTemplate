@@ -161,9 +161,8 @@ public class DataInitializer implements CommandLineRunner {
             .phone(phone)
             .address(address)
             .active(true)
-            .createdBy(createdBy)
-            .updatedBy(createdBy)
             .build();
+        // createdBy and updatedBy are set automatically by JPA auditing
         customerRepository.save(customer);
     }
 }
