@@ -1,5 +1,6 @@
 package dev.dsa.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
@@ -38,6 +39,7 @@ public class Account extends Auditable {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "customer_id", nullable = false)
+    @JsonIgnoreProperties({"accounts"})
     private Customer customer;
 
     public enum AccountStatus {
