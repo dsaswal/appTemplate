@@ -40,6 +40,7 @@ public class SecurityConfig {
                 .requestMatchers("/login", "/logout").permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .requestMatchers("/customers/**").hasAnyAuthority("CUSTOMER_READ", "CUSTOMER_WRITE")
+                .requestMatchers("/accounts/**").hasAnyAuthority("ACCOUNT_READ", "ACCOUNT_WRITE")
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form

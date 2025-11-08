@@ -24,14 +24,14 @@ public class AccountController {
     private final CustomerService customerService;
 
     @GetMapping
-    @PreAuthorize("hasAnyAuthority('CUSTOMER_READ', 'CUSTOMER_WRITE')")
+    @PreAuthorize("hasAnyAuthority('ACCOUNT_READ', 'ACCOUNT_WRITE')")
     public String listAccounts(Model model) {
         model.addAttribute("accounts", accountService.getAllAccounts());
         return "accounts/list";
     }
 
     @GetMapping("/customer/{customerId}")
-    @PreAuthorize("hasAnyAuthority('CUSTOMER_READ', 'CUSTOMER_WRITE')")
+    @PreAuthorize("hasAnyAuthority('ACCOUNT_READ', 'ACCOUNT_WRITE')")
     public String listAccountsByCustomer(@PathVariable Long customerId, Model model) {
         Customer customer = customerService.getCustomerById(customerId)
             .orElseThrow(() -> new RuntimeException("Customer not found"));
@@ -41,7 +41,7 @@ public class AccountController {
     }
 
     @GetMapping("/new")
-    @PreAuthorize("hasAuthority('CUSTOMER_WRITE')")
+    @PreAuthorize("hasAuthority('ACCOUNT_WRITE')")
     public String newAccountForm(@RequestParam(required = false) Long customerId, Model model) {
         model.addAttribute("account", new Account());
         model.addAttribute("customers", customerService.getAllCustomers());
@@ -51,7 +51,7 @@ public class AccountController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAuthority('CUSTOMER_WRITE')")
+    @PreAuthorize("hasAuthority('ACCOUNT_WRITE')")
     public String createAccount(@Valid @ModelAttribute Account account,
                                BindingResult result,
                                @RequestParam Long customerId,
@@ -76,7 +76,7 @@ public class AccountController {
     }
 
     @GetMapping("/{id}/edit")
-    @PreAuthorize("hasAuthority('CUSTOMER_WRITE')")
+    @PreAuthorize("hasAuthority('ACCOUNT_WRITE')")
     public String editAccountForm(@PathVariable Long id, Model model) {
         Account account = accountService.getAccountById(id)
             .orElseThrow(() -> new RuntimeException("Account not found"));
@@ -86,7 +86,7 @@ public class AccountController {
     }
 
     @PostMapping("/{id}")
-    @PreAuthorize("hasAuthority('CUSTOMER_WRITE')")
+    @PreAuthorize("hasAuthority('ACCOUNT_WRITE')")
     public String updateAccount(@PathVariable Long id,
                                @Valid @ModelAttribute Account account,
                                BindingResult result,
@@ -110,7 +110,7 @@ public class AccountController {
     }
 
     @PostMapping("/{id}/delete")
-    @PreAuthorize("hasAuthority('CUSTOMER_DELETE')")
+    @PreAuthorize("hasAuthority('ACCOUNT_DELETE')")
     public String deleteAccount(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {
             Account account = accountService.getAccountById(id).orElseThrow();
@@ -126,7 +126,7 @@ public class AccountController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('CUSTOMER_READ', 'CUSTOMER_WRITE')")
+    @PreAuthorize("hasAnyAuthority('ACCOUNT_READ', 'ACCOUNT_WRITE')")
     public String viewAccount(@PathVariable Long id, Model model) {
         Account account = accountService.getAccountById(id)
             .orElseThrow(() -> new RuntimeException("Account not found"));

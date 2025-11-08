@@ -35,6 +35,9 @@ public class DataInitializer implements CommandLineRunner {
         Permission customerRead = createPermission("CUSTOMER_READ", "Read customer data");
         Permission customerWrite = createPermission("CUSTOMER_WRITE", "Create and update customers");
         Permission customerDelete = createPermission("CUSTOMER_DELETE", "Delete customers");
+        Permission accountRead = createPermission("ACCOUNT_READ", "Read account data");
+        Permission accountWrite = createPermission("ACCOUNT_WRITE", "Create and update accounts");
+        Permission accountDelete = createPermission("ACCOUNT_DELETE", "Delete accounts");
         Permission userManage = createPermission("USER_MANAGE", "Manage users");
         Permission roleManage = createPermission("ROLE_MANAGE", "Manage roles and permissions");
         Permission auditView = createPermission("AUDIT_VIEW", "View audit logs");
@@ -49,11 +52,14 @@ public class DataInitializer implements CommandLineRunner {
         Role customerServiceRole = createRole("CUSTOMER_SERVICE", "Customer service representative", userRole);
         customerServiceRole.getPermissions().add(customerRead);
         customerServiceRole.getPermissions().add(customerWrite);
+        customerServiceRole.getPermissions().add(accountRead);
+        customerServiceRole.getPermissions().add(accountWrite);
         roleRepository.save(customerServiceRole);
 
         // Manager role - inherits from CUSTOMER_SERVICE
         Role managerRole = createRole("MANAGER", "Manager with extended permissions", customerServiceRole);
         managerRole.getPermissions().add(customerDelete);
+        managerRole.getPermissions().add(accountDelete);
         managerRole.getPermissions().add(auditView);
         roleRepository.save(managerRole);
 
