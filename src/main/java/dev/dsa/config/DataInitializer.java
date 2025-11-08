@@ -3,8 +3,10 @@ package dev.dsa.config;
 import dev.dsa.entity.Customer;
 import dev.dsa.entity.Permission;
 import dev.dsa.entity.Role;
+import dev.dsa.entity.RoleProfile;
 import dev.dsa.entity.User;
 import dev.dsa.repository.*;
+import dev.dsa.service.UserProfileService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -24,6 +26,8 @@ public class DataInitializer implements CommandLineRunner {
     private final RoleRepository roleRepository;
     private final PermissionRepository permissionRepository;
     private final CustomerRepository customerRepository;
+    private final RoleProfileRepository roleProfileRepository;
+    private final UserProfileService userProfileService;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -35,6 +39,9 @@ public class DataInitializer implements CommandLineRunner {
         Permission customerRead = createPermission("CUSTOMER_READ", "Read customer data");
         Permission customerWrite = createPermission("CUSTOMER_WRITE", "Create and update customers");
         Permission customerDelete = createPermission("CUSTOMER_DELETE", "Delete customers");
+        Permission accountRead = createPermission("ACCOUNT_READ", "Read account data");
+        Permission accountWrite = createPermission("ACCOUNT_WRITE", "Create and update accounts");
+        Permission accountDelete = createPermission("ACCOUNT_DELETE", "Delete accounts");
         Permission userManage = createPermission("USER_MANAGE", "Manage users");
         Permission roleManage = createPermission("ROLE_MANAGE", "Manage roles and permissions");
         Permission auditView = createPermission("AUDIT_VIEW", "View audit logs");
@@ -49,11 +56,14 @@ public class DataInitializer implements CommandLineRunner {
         Role customerServiceRole = createRole("CUSTOMER_SERVICE", "Customer service representative", userRole);
         customerServiceRole.getPermissions().add(customerRead);
         customerServiceRole.getPermissions().add(customerWrite);
+        customerServiceRole.getPermissions().add(accountRead);
+        customerServiceRole.getPermissions().add(accountWrite);
         roleRepository.save(customerServiceRole);
 
         // Manager role - inherits from CUSTOMER_SERVICE
         Role managerRole = createRole("MANAGER", "Manager with extended permissions", customerServiceRole);
         managerRole.getPermissions().add(customerDelete);
+        managerRole.getPermissions().add(accountDelete);
         managerRole.getPermissions().add(auditView);
         roleRepository.save(managerRole);
 
@@ -65,24 +75,51 @@ public class DataInitializer implements CommandLineRunner {
 
         log.info("Created {} roles", roleRepository.count());
 
+        // Create Role Profiles (combining multiple roles)
+        RoleProfile salesManagerProfile = createRoleProfile(
+            "SALES_MANAGER",
+            "Sales Manager with customer and account management",
+            Set.of(managerRole, customerServiceRole)
+        );
+
+        RoleProfile customerSupportProfile = createRoleProfile(
+            "CUSTOMER_SUPPORT",
+            "Customer support with read access",
+            Set.of(customerServiceRole, userRole)
+        );
+
+        RoleProfile dataAnalystProfile = createRoleProfile(
+            "DATA_ANALYST",
+            "Data analyst with read-only access to all entities",
+            Set.of(userRole)
+        );
+
+        log.info("Created {} role profiles", roleProfileRepository.count());
+
         // Create Users
         User admin = createUser("admin", "admin123", "admin@example.com", "Admin", "User");
         admin.getRoles().add(adminRole);
         userRepository.save(admin);
+        userProfileService.createDefaultProfile(admin);
 
         User manager = createUser("manager", "manager123", "manager@example.com", "Manager", "User");
         manager.getRoles().add(managerRole);
+        manager.getRoleProfiles().add(salesManagerProfile); // Example: assign profile to user
         userRepository.save(manager);
+        userProfileService.createDefaultProfile(manager);
 
         User csrep = createUser("csrep", "csrep123", "csrep@example.com", "Customer Service", "Rep");
         csrep.getRoles().add(customerServiceRole);
+        csrep.getRoleProfiles().add(customerSupportProfile); // Example: assign profile to user
         userRepository.save(csrep);
+        userProfileService.createDefaultProfile(csrep);
 
         User basicUser = createUser("user", "user123", "user@example.com", "Basic", "User");
         basicUser.getRoles().add(userRole);
         userRepository.save(basicUser);
+        userProfileService.createDefaultProfile(basicUser);
 
-        log.info("Created {} users", userRepository.count());
+        log.info("Created {} users with profiles", userRepository.count());
 
         // Create Sample Customers
         createCustomer("John Doe", "john.doe@example.com", "555-0101", "123 Main St, Springfield", "admin");
@@ -96,13 +133,18 @@ public class DataInitializer implements CommandLineRunner {
         log.info("=== Data Initialization Complete ===");
         log.info("Login Credentials:");
         log.info("  Admin:    username=admin, password=admin123");
-        log.info("  Manager:  username=manager, password=manager123");
-        log.info("  CS Rep:   username=csrep, password=csrep123");
+        log.info("  Manager:  username=manager, password=manager123 (has SALES_MANAGER profile)");
+        log.info("  CS Rep:   username=csrep, password=csrep123 (has CUSTOMER_SUPPORT profile)");
         log.info("  User:     username=user, password=user123");
         log.info("");
         log.info("Role Inheritance:");
         log.info("  ADMIN -> MANAGER -> CUSTOMER_SERVICE -> USER");
         log.info("  (Each role inherits all permissions from its parent)");
+        log.info("");
+        log.info("Role Profiles:");
+        log.info("  SALES_MANAGER: Combines MANAGER + CUSTOMER_SERVICE roles");
+        log.info("  CUSTOMER_SUPPORT: Combines CUSTOMER_SERVICE + USER roles");
+        log.info("  DATA_ANALYST: Read-only access profile");
         log.info("====================================");
     }
 
@@ -147,6 +189,7 @@ public class DataInitializer implements CommandLineRunner {
             .accountNonLocked(true)
             .credentialsNonExpired(true)
             .roles(new HashSet<>())
+            .roleProfiles(new HashSet<>())
             .build();
         return user;
     }
@@ -161,9 +204,21 @@ public class DataInitializer implements CommandLineRunner {
             .phone(phone)
             .address(address)
             .active(true)
-            .createdBy(createdBy)
-            .updatedBy(createdBy)
             .build();
+        // createdBy and updatedBy are set automatically by JPA auditing
         customerRepository.save(customer);
+    }
+
+    private RoleProfile createRoleProfile(String name, String description, Set<Role> roles) {
+        if (roleProfileRepository.findByName(name).isPresent()) {
+            return roleProfileRepository.findByName(name).get();
+        }
+        RoleProfile profile = RoleProfile.builder()
+            .name(name)
+            .description(description)
+            .active(true)
+            .roles(roles)
+            .build();
+        return roleProfileRepository.save(profile);
     }
 }

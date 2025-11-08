@@ -4,79 +4,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home - Enterprise Application</title>
+    <title>Home - anApp</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container-fluid">
-            <a class="navbar-brand" th:href="@{/}">
-                <i class="fas fa-building"></i> Enterprise App
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link active" th:href="@{/}">
-                            <i class="fas fa-home"></i> Home
-                        </a>
-                    </li>
-                    <li class="nav-item" sec:authorize="hasAnyAuthority('CUSTOMER_READ', 'CUSTOMER_WRITE')">
-                        <a class="nav-link" th:href="@{/customers}">
-                            <i class="fas fa-users"></i> Customers
-                        </a>
-                    </li>
-                    <li class="nav-item dropdown" sec:authorize="hasRole('ADMIN')">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-cog"></i> Administration
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" th:href="@{/admin/users}">User Management</a></li>
-                            <li><a class="dropdown-item" th:href="@{/admin/roles}">Role Management</a></li>
-                            <li><a class="dropdown-item" th:href="@{/admin/permissions}">Permissions</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" th:href="@{/admin/audit}">Audit Logs</a></li>
-                        </ul>
-                    </li>
-                </ul>
-                <ul class="navbar-nav">
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-user"></i> <span th:text="${username}">User</span>
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li>
-                                <form th:action="@{/logout}" method="post" class="px-3 py-2">
-                                    <button type="submit" class="btn btn-sm btn-danger w-100">
-                                        <i class="fas fa-sign-out-alt"></i> Logout
-                                    </button>
-                                </form>
-                            </li>
-                        </ul>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
+    <div th:replace="fragments/navigation :: navbar"></div>
 
     <div class="container mt-5">
         <div class="row">
             <div class="col-md-12">
                 <div class="jumbotron bg-light p-5 rounded">
-                    <h1 class="display-4">Welcome to Enterprise Application!</h1>
+                    <h1 class="display-4">Welcome to anApp!</h1>
                     <p class="lead">Logged in as: <strong th:text="${username}">User</strong></p>
                     <hr class="my-4">
-                    <p>This is an enterprise-grade Spring Boot application with:</p>
-                    <ul class="list-group list-group-flush mb-4">
-                        <li class="list-group-item"><i class="fas fa-check text-success"></i> Role-Based Access Control (RBAC)</li>
-                        <li class="list-group-item"><i class="fas fa-check text-success"></i> Dynamic Permissions (changeable without restart)</li>
-                        <li class="list-group-item"><i class="fas fa-check text-success"></i> Inheritable Roles</li>
-                        <li class="list-group-item"><i class="fas fa-check text-success"></i> Complete Audit Logging</li>
-                        <li class="list-group-item"><i class="fas fa-check text-success"></i> User Management Admin UI</li>
-                    </ul>
 
                     <h5>Your Authorities:</h5>
                     <div class="mb-3">
@@ -90,36 +31,6 @@
                         <a class="btn btn-secondary btn-lg ms-2" th:href="@{/admin/users}" sec:authorize="hasRole('ADMIN')">
                             <i class="fas fa-cog"></i> Administration
                         </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="row mt-4">
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-body text-center">
-                        <i class="fas fa-shield-alt fa-3x text-primary mb-3"></i>
-                        <h5 class="card-title">Secure</h5>
-                        <p class="card-text">Enterprise-grade security with Spring Security</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-body text-center">
-                        <i class="fas fa-tachometer-alt fa-3x text-success mb-3"></i>
-                        <h5 class="card-title">Fast</h5>
-                        <p class="card-text">Optimized performance with caching</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-body text-center">
-                        <i class="fas fa-chart-line fa-3x text-warning mb-3"></i>
-                        <h5 class="card-title">Scalable</h5>
-                        <p class="card-text">Ready for PostgreSQL and horizontal scaling</p>
                     </div>
                 </div>
             </div>

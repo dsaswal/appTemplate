@@ -50,13 +50,13 @@ public class CustomUserDetailsService implements UserDetailsService {
     private Collection<? extends GrantedAuthority> getAuthorities(User user) {
         Set<GrantedAuthority> authorities = new HashSet<>();
 
-        // Add role-based authorities
-        user.getRoles().forEach(role -> {
+        // Add role-based authorities (from direct roles and role profiles)
+        user.getAllRoles().forEach(role -> {
             authorities.add(new SimpleGrantedAuthority("ROLE_" + role.getName()));
             log.debug("Added role: ROLE_{}", role.getName());
         });
 
-        // Add permission-based authorities (including inherited permissions)
+        // Add permission-based authorities (including permissions from profiles and inherited permissions)
         Set<Permission> allPermissions = user.getAllPermissions();
         allPermissions.forEach(permission -> {
             if (permission.getActive()) {

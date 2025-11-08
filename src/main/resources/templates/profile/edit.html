@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Profile</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div th:replace="fragments/navigation :: navbar"></div>
+
+    <div class="container mt-4">
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+            <i class="fas fa-exclamation-triangle"></i> <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-user-edit"></i> Edit Profile</h2>
+            <a th:href="@{/profile}" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+        </div>
+
+        <form th:action="@{/profile/update}" th:object="${profile}" method="post">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> User Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> Username, email, and name cannot be changed here. Contact administrator to update these fields.
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Username:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            <span th:text="${profile.user.username}" class="text-muted"></span>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Email:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            <span th:text="${profile.user.email}" class="text-muted"></span>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Full Name:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            <span th:text="${profile.user.firstName + ' ' + profile.user.lastName}" class="text-muted"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-cog"></i> Preferences</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="pageSize" class="form-label">
+                            <i class="fas fa-list-ol"></i> Page Size
+                        </label>
+                        <input type="number" class="form-control" id="pageSize" th:field="*{pageSize}"
+                               min="5" max="100" required>
+                        <div class="form-text">Number of items to display per page (5-100)</div>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('pageSize')}" th:errors="*{pageSize}">
+                            Page size error
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="timezone" class="form-label">
+                            <i class="fas fa-globe"></i> Timezone
+                        </label>
+                        <select class="form-select" id="timezone" th:field="*{timezone}" required>
+                            <option value="UTC">UTC</option>
+                            <option value="America/New_York">America/New York (EST/EDT)</option>
+                            <option value="America/Chicago">America/Chicago (CST/CDT)</option>
+                            <option value="America/Denver">America/Denver (MST/MDT)</option>
+                            <option value="America/Los_Angeles">America/Los Angeles (PST/PDT)</option>
+                            <option value="Europe/London">Europe/London (GMT/BST)</option>
+                            <option value="Europe/Paris">Europe/Paris (CET/CEST)</option>
+                            <option value="Asia/Tokyo">Asia/Tokyo (JST)</option>
+                            <option value="Asia/Shanghai">Asia/Shanghai (CST)</option>
+                            <option value="Asia/Kolkata">Asia/Kolkata (IST)</option>
+                            <option value="Australia/Sydney">Australia/Sydney (AEDT/AEST)</option>
+                        </select>
+                        <div class="form-text">Select your timezone for date/time display</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="language" class="form-label">
+                            <i class="fas fa-language"></i> Language
+                        </label>
+                        <select class="form-select" id="language" th:field="*{language}" required>
+                            <option value="en">English</option>
+                            <option value="es">Spanish</option>
+                            <option value="fr">French</option>
+                            <option value="de">German</option>
+                            <option value="zh">Chinese</option>
+                            <option value="ja">Japanese</option>
+                            <option value="hi">Hindi</option>
+                        </select>
+                        <div class="form-text">Preferred language for interface</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="dateFormat" class="form-label">
+                            <i class="fas fa-calendar"></i> Date Format
+                        </label>
+                        <select class="form-select" id="dateFormat" th:field="*{dateFormat}" required>
+                            <option value="yyyy-MM-dd">YYYY-MM-DD (2024-01-31)</option>
+                            <option value="dd/MM/yyyy">DD/MM/YYYY (31/01/2024)</option>
+                            <option value="MM/dd/yyyy">MM/DD/YYYY (01/31/2024)</option>
+                            <option value="dd-MMM-yyyy">DD-MMM-YYYY (31-Jan-2024)</option>
+                        </select>
+                        <div class="form-text">How dates should be displayed</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="timeFormat" class="form-label">
+                            <i class="fas fa-clock"></i> Time Format
+                        </label>
+                        <select class="form-select" id="timeFormat" th:field="*{timeFormat}" required>
+                            <option value="HH:mm:ss">24-hour (13:45:30)</option>
+                            <option value="hh:mm:ss a">12-hour (01:45:30 PM)</option>
+                            <option value="HH:mm">24-hour without seconds (13:45)</option>
+                            <option value="hh:mm a">12-hour without seconds (01:45 PM)</option>
+                        </select>
+                        <div class="form-text">How times should be displayed</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="theme" class="form-label">
+                            <i class="fas fa-palette"></i> Theme
+                        </label>
+                        <select class="form-select" id="theme" th:field="*{theme}" required>
+                            <option value="light">Light</option>
+                            <option value="dark">Dark</option>
+                            <option value="auto">Auto (System Default)</option>
+                        </select>
+                        <div class="form-text">Interface color scheme</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4 mb-4">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Save Changes
+                </button>
+                <a th:href="@{/profile}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -7,11 +7,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container-fluid">
-            <a class="navbar-brand" th:href="@{/}"><i class="fas fa-building"></i> Enterprise App</a>
-        </div>
-    </nav>
+    <div th:replace="fragments/navigation :: navbar"></div>
 
     <div class="container mt-4">
         <div th:if="${success}" class="alert alert-success alert-dismissible fade show">
@@ -28,8 +24,9 @@
                 <div th:unless="${role.permissions.isEmpty()}">
                     <div th:each="perm : ${role.permissions}" class="d-inline-block me-2 mb-2">
                         <span class="badge bg-primary me-1" th:text="${perm.name}"></span>
-                        <form th:action="@{/admin/roles/{roleId}/permissions/{permId}/remove(roleId=${role.id},permId=${perm.id})}"
+                        <form th:action="@{/admin/roles/{roleId}/permissions/remove(roleId=${role.id})}"
                               method="post" style="display: inline;">
+                            <input type="hidden" name="permissionId" th:value="${perm.id}">
                             <button type="submit" class="btn btn-sm btn-danger">
                                 <i class="fas fa-times"></i>
                             </button>
@@ -38,7 +35,7 @@
                 </div>
                 <hr>
                 <h6>Add Permission</h6>
-                <form th:action="@{/admin/roles/{roleId}/permissions/{permId}/add(roleId=${role.id})}" method="post" class="row g-2">
+                <form th:action="@{/admin/roles/{roleId}/permissions/add(roleId=${role.id})}" method="post" class="row g-2">
                     <div class="col-auto">
                         <select name="permissionId" class="form-select" required>
                             <option value="">Select Permission...</option>

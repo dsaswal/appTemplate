@@ -1,11 +1,12 @@
 package dev.dsa.service;
 
 import dev.dsa.entity.Customer;
+import dev.dsa.exception.ResourceNotFoundException;
 import dev.dsa.repository.CustomerRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,10 +25,7 @@ public class CustomerService {
     public Customer createCustomer(Customer customer) {
         log.info("Creating customer: {}", customer.getName());
 
-        String currentUser = getCurrentUsername();
-        customer.setCreatedBy(currentUser);
-        customer.setUpdatedBy(currentUser);
-
+        // createdBy and updatedBy are set automatically by JPA auditing
         Customer savedCustomer = customerRepository.save(customer);
 
         auditService.logAction("CREATE", "Customer", savedCustomer.getId(),
@@ -41,17 +39,16 @@ public class CustomerService {
         log.info("Updating customer: {}", id);
 
         Customer customer = customerRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Customer not found: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException("Customer", id));
 
         String oldValue = customer.toString();
-        String currentUser = getCurrentUsername();
 
         customer.setName(customerDetails.getName());
         customer.setEmail(customerDetails.getEmail());
         customer.setPhone(customerDetails.getPhone());
         customer.setAddress(customerDetails.getAddress());
         customer.setActive(customerDetails.getActive());
-        customer.setUpdatedBy(currentUser);
+        // updatedBy is set automatically by JPA auditing
 
         Customer updatedCustomer = customerRepository.save(customer);
 
@@ -66,7 +63,7 @@ public class CustomerService {
         log.info("Deleting customer: {}", id);
 
         Customer customer = customerRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Customer not found: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException("Customer", id));
 
         String customerName = customer.getName();
         customerRepository.delete(customer);
@@ -95,8 +92,15 @@ public class CustomerService {
         return customerRepository.findByNameContainingIgnoreCase(name);
     }
 
-    private String getCurrentUsername() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return authentication != null ? authentication.getName() : "system";
+    @Transactional(readOnly = true)
+    public Page<Customer> getAllCustomersWithPagination(Pageable pageable) {
+        log.info("Getting customers with pagination: {}", pageable);
+        return customerRepository.findAll(pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<Customer> getActiveCustomersWithPagination(Pageable pageable) {
+        log.info("Getting active customers with pagination: {}", pageable);
+        return customerRepository.findByActive(true, pageable);
     }
 }
