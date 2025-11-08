@@ -1,6 +1,7 @@
 package dev.dsa.service;
 
 import dev.dsa.entity.Customer;
+import dev.dsa.exception.ResourceNotFoundException;
 import dev.dsa.repository.CustomerRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,7 +37,7 @@ public class CustomerService {
         log.info("Updating customer: {}", id);
 
         Customer customer = customerRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Customer not found: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException("Customer", id));
 
         String oldValue = customer.toString();
 
@@ -60,7 +61,7 @@ public class CustomerService {
         log.info("Deleting customer: {}", id);
 
         Customer customer = customerRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Customer not found: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException("Customer", id));
 
         String customerName = customer.getName();
         customerRepository.delete(customer);

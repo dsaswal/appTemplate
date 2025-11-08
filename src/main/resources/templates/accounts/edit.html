@@ -56,8 +56,8 @@
                     <div class="mb-3">
                         <p><strong>Created By:</strong> <span th:text="${account.createdBy}"></span></p>
                         <p><strong>Created At:</strong> <span th:text="${#temporals.format(account.createdAt, 'yyyy-MM-dd HH:mm')}"></span></p>
-                        <p><strong>Last Updated By:</strong> <span th:text="${account.updatedBy}"></span></p>
-                        <p><strong>Last Updated At:</strong> <span th:text="${#temporals.format(account.updatedAt, 'yyyy-MM-dd HH:mm')}"></span></p>
+                        <p th:if="${account.updatedBy != null}"><strong>Last Updated By:</strong> <span th:text="${account.updatedBy}"></span></p>
+                        <p th:if="${account.updatedAt != null}"><strong>Last Updated At:</strong> <span th:text="${#temporals.format(account.updatedAt, 'yyyy-MM-dd HH:mm')}"></span></p>
                     </div>
 
                     <button type="submit" class="btn btn-primary">

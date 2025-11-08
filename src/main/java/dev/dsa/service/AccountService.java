@@ -2,6 +2,8 @@ package dev.dsa.service;
 
 import dev.dsa.entity.Account;
 import dev.dsa.entity.Customer;
+import dev.dsa.exception.BusinessException;
+import dev.dsa.exception.ResourceNotFoundException;
 import dev.dsa.repository.AccountRepository;
 import dev.dsa.repository.CustomerRepository;
 import lombok.RequiredArgsConstructor;
@@ -26,11 +28,11 @@ public class AccountService {
         log.info("Creating account: {} for customer: {}", account.getAccountRef(), customerId);
 
         if (accountRepository.existsByAccountRef(account.getAccountRef())) {
-            throw new RuntimeException("Account reference already exists: " + account.getAccountRef());
+            throw new BusinessException("Account reference already exists: " + account.getAccountRef());
         }
 
         Customer customer = customerRepository.findById(customerId)
-            .orElseThrow(() -> new RuntimeException("Customer not found: " + customerId));
+            .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
 
         account.setCustomer(customer);
         Account savedAccount = accountRepository.save(account);
@@ -47,7 +49,7 @@ public class AccountService {
         log.info("Updating account: {}", id);
 
         Account account = accountRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Account not found: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException("Account", id));
 
         String oldValue = account.toString();
 
@@ -69,7 +71,7 @@ public class AccountService {
         log.info("Deleting account: {}", id);
 
         Account account = accountRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Account not found: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException("Account", id));
 
         String accountRef = account.getAccountRef();
         accountRepository.delete(account);
