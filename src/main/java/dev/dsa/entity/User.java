@@ -57,9 +57,9 @@ public class User {
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
-        name = "user_profiles",
+        name = "user_role_profiles",
         joinColumns = @JoinColumn(name = "user_id"),
-        inverseJoinColumns = @JoinColumn(name = "profile_id")
+        inverseJoinColumns = @JoinColumn(name = "role_profile_id")
     )
     private Set<RoleProfile> roleProfiles = new HashSet<>();
 
