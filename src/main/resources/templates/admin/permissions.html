@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Permission Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" th:href="@{/}"><i class="fas fa-building"></i> Enterprise App</a>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show">
+            <i class="fas fa-check-circle"></i> <span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-key"></i> Permission Management</h2>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newPermModal">
+                <i class="fas fa-plus"></i> New Permission
+            </button>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Description</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="perm : ${permissions}">
+                            <td th:text="${perm.id}"></td>
+                            <td th:text="${perm.name}"></td>
+                            <td th:text="${perm.description}"></td>
+                            <td>
+                                <span th:if="${perm.active}" class="badge bg-success">Active</span>
+                                <span th:unless="${perm.active}" class="badge bg-danger">Inactive</span>
+                            </td>
+                            <td>
+                                <form th:action="@{/admin/permissions/{id}/toggle(id=${perm.id})}" method="post" style="display: inline;">
+                                    <button type="submit" class="btn btn-sm btn-warning">
+                                        <i class="fas fa-toggle-on"></i> Toggle
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Permission Modal -->
+    <div class="modal fade" id="newPermModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create New Permission</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form th:action="@{/admin/permissions}" method="post">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Permission Name</label>
+                            <input type="text" class="form-control" id="name" name="name" placeholder="e.g., CUSTOMER_READ" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="2"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Create Permission</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
