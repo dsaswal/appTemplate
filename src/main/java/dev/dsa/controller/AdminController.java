@@ -225,4 +225,14 @@ public class AdminController {
         model.addAttribute("logs", auditService.getRecentLogs(100));
         return "admin/audit";
     }
+
+    @GetMapping("/audit/entity")
+    public String entityAudit(@RequestParam String entityType,
+                             @RequestParam Long entityId,
+                             Model model) {
+        model.addAttribute("entityType", entityType);
+        model.addAttribute("entityId", entityId);
+        model.addAttribute("logs", auditService.getLogsByEntity(entityType, entityId));
+        return "admin/entity-audit";
+    }
 }
