@@ -141,6 +141,11 @@ public class AccountSpecification {
                 query.distinct(true);
             }
 
+            // If no predicates, return a predicate that matches all records
+            if (predicates.isEmpty()) {
+                return criteriaBuilder.conjunction(); // Returns "1=1" (always true)
+            }
+
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
     }

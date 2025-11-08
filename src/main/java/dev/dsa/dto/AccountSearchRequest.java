@@ -41,11 +41,15 @@ public class AccountSearchRequest {
 
     // Helper method to check if search is empty
     public boolean isEmpty() {
-        return accountRef == null && accountName == null && currency == null &&
-               customerName == null && createdBy == null && updatedBy == null &&
+        return isBlankOrNull(accountRef) && isBlankOrNull(accountName) && isBlankOrNull(currency) &&
+               isBlankOrNull(customerName) && isBlankOrNull(createdBy) && isBlankOrNull(updatedBy) &&
                status == null && customerIdFrom == null && customerIdTo == null &&
                accountIdFrom == null && accountIdTo == null &&
                createdAtFrom == null && createdAtTo == null &&
                updatedAtFrom == null && updatedAtTo == null;
+    }
+
+    private boolean isBlankOrNull(String str) {
+        return str == null || str.trim().isEmpty();
     }
 }
