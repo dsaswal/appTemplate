@@ -15,6 +15,18 @@ public class AccountSpecification {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
 
+            // Determine if we need a customer join
+            boolean needsCustomerJoin =
+                (searchRequest.getCustomerName() != null && !searchRequest.getCustomerName().trim().isEmpty()) ||
+                searchRequest.getCustomerIdFrom() != null ||
+                searchRequest.getCustomerIdTo() != null;
+
+            // Create customer join only once if needed
+            Join<Account, Customer> customerJoin = null;
+            if (needsCustomerJoin) {
+                customerJoin = root.join("customer", JoinType.INNER);
+            }
+
             // Text search with LIKE (case-insensitive)
             if (searchRequest.getAccountRef() != null && !searchRequest.getAccountRef().trim().isEmpty()) {
                 predicates.add(criteriaBuilder.like(
@@ -51,9 +63,8 @@ public class AccountSpecification {
                 ));
             }
 
-            // Customer name search (join)
+            // Customer name search (using shared join)
             if (searchRequest.getCustomerName() != null && !searchRequest.getCustomerName().trim().isEmpty()) {
-                Join<Account, Customer> customerJoin = root.join("customer", JoinType.INNER);
                 predicates.add(criteriaBuilder.like(
                     criteriaBuilder.lower(customerJoin.get("name")),
                     "%" + searchRequest.getCustomerName().toLowerCase() + "%"
@@ -80,9 +91,8 @@ public class AccountSpecification {
                 ));
             }
 
-            // Customer ID range
+            // Customer ID range (using shared join)
             if (searchRequest.getCustomerIdFrom() != null) {
-                Join<Account, Customer> customerJoin = root.join("customer", JoinType.INNER);
                 predicates.add(criteriaBuilder.greaterThanOrEqualTo(
                     customerJoin.get("id"),
                     searchRequest.getCustomerIdFrom()
@@ -90,7 +100,6 @@ public class AccountSpecification {
             }
 
             if (searchRequest.getCustomerIdTo() != null) {
-                Join<Account, Customer> customerJoin = root.join("customer", JoinType.INNER);
                 predicates.add(criteriaBuilder.lessThanOrEqualTo(
                     customerJoin.get("id"),
                     searchRequest.getCustomerIdTo()
@@ -125,6 +134,11 @@ public class AccountSpecification {
                     root.get("updatedAt"),
                     searchRequest.getUpdatedAtTo()
                 ));
+            }
+
+            // Add distinct to avoid duplicate results when using joins
+            if (needsCustomerJoin) {
+                query.distinct(true);
             }
 
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
