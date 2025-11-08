@@ -1,5 +1,6 @@
 package dev.dsa.config;
 
+import dev.dsa.entity.Account;
 import dev.dsa.entity.Customer;
 import dev.dsa.entity.Permission;
 import dev.dsa.entity.Role;
@@ -26,6 +27,7 @@ public class DataInitializer implements CommandLineRunner {
     private final RoleRepository roleRepository;
     private final PermissionRepository permissionRepository;
     private final CustomerRepository customerRepository;
+    private final AccountRepository accountRepository;
     private final RoleProfileRepository roleProfileRepository;
     private final UserProfileService userProfileService;
     private final PasswordEncoder passwordEncoder;
@@ -121,14 +123,24 @@ public class DataInitializer implements CommandLineRunner {
 
         log.info("Created {} users with profiles", userRepository.count());
 
-        // Create Sample Customers
-        createCustomer("John Doe", "john.doe@example.com", "555-0101", "123 Main St, Springfield", "admin");
-        createCustomer("Jane Smith", "jane.smith@example.com", "555-0102", "456 Oak Ave, Springfield", "admin");
-        createCustomer("Bob Johnson", "bob.johnson@example.com", "555-0103", "789 Pine Rd, Springfield", "admin");
-        createCustomer("Alice Williams", "alice.williams@example.com", "555-0104", "321 Elm St, Springfield", "admin");
-        createCustomer("Charlie Brown", "charlie.brown@example.com", "555-0105", "654 Maple Dr, Springfield", "admin");
+        // Create Sample Customers with Accounts
+        Customer johnDoe = createCustomer("John Doe", "john.doe@example.com", "555-0101", "123 Main St, Springfield", "admin");
+        createAccountsForCustomer(johnDoe, "ACC-001", "ACC-002");
+
+        Customer janeSmith = createCustomer("Jane Smith", "jane.smith@example.com", "555-0102", "456 Oak Ave, Springfield", "admin");
+        createAccountsForCustomer(janeSmith, "ACC-003", "ACC-004");
+
+        Customer bobJohnson = createCustomer("Bob Johnson", "bob.johnson@example.com", "555-0103", "789 Pine Rd, Springfield", "admin");
+        createAccountsForCustomer(bobJohnson, "ACC-005", "ACC-006");
+
+        Customer aliceWilliams = createCustomer("Alice Williams", "alice.williams@example.com", "555-0104", "321 Elm St, Springfield", "admin");
+        createAccountsForCustomer(aliceWilliams, "ACC-007", "ACC-008");
+
+        Customer charlieBrown = createCustomer("Charlie Brown", "charlie.brown@example.com", "555-0105", "654 Maple Dr, Springfield", "admin");
+        createAccountsForCustomer(charlieBrown, "ACC-009", "ACC-010");
 
         log.info("Created {} customers", customerRepository.count());
+        log.info("Created {} accounts", accountRepository.count());
 
         log.info("=== Data Initialization Complete ===");
         log.info("Login Credentials:");
@@ -194,9 +206,9 @@ public class DataInitializer implements CommandLineRunner {
         return user;
     }
 
-    private void createCustomer(String name, String email, String phone, String address, String createdBy) {
+    private Customer createCustomer(String name, String email, String phone, String address, String createdBy) {
         if (customerRepository.findByEmail(email).isPresent()) {
-            return;
+            return customerRepository.findByEmail(email).get();
         }
         Customer customer = Customer.builder()
             .name(name)
@@ -206,7 +218,37 @@ public class DataInitializer implements CommandLineRunner {
             .active(true)
             .build();
         // createdBy and updatedBy are set automatically by JPA auditing
-        customerRepository.save(customer);
+        return customerRepository.save(customer);
+    }
+
+    private void createAccountsForCustomer(Customer customer, String accountRef1, String accountRef2) {
+        if (customer == null) {
+            return;
+        }
+
+        // Create first account (Checking Account in USD)
+        if (accountRepository.findByAccountRef(accountRef1).isEmpty()) {
+            Account account1 = Account.builder()
+                .accountRef(accountRef1)
+                .accountName(customer.getName() + " - Checking Account")
+                .currency("USD")
+                .status(Account.AccountStatus.ACTIVE)
+                .customer(customer)
+                .build();
+            accountRepository.save(account1);
+        }
+
+        // Create second account (Savings Account in EUR)
+        if (accountRepository.findByAccountRef(accountRef2).isEmpty()) {
+            Account account2 = Account.builder()
+                .accountRef(accountRef2)
+                .accountName(customer.getName() + " - Savings Account")
+                .currency("EUR")
+                .status(Account.AccountStatus.ACTIVE)
+                .customer(customer)
+                .build();
+            accountRepository.save(account2);
+        }
     }
 
     private RoleProfile createRoleProfile(String name, String description, Set<Role> roles) {
