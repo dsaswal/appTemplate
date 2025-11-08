@@ -4,6 +4,8 @@ import dev.dsa.api.dto.ApiResponse;
 import dev.dsa.dto.AccountSearchRequest;
 import dev.dsa.entity.Account;
 import dev.dsa.service.AccountService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +22,8 @@ import java.util.List;
 @RequestMapping("/api/accounts")
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "Accounts", description = "Account management endpoints")
+@SecurityRequirement(name = "Bearer Authentication")
 public class AccountApiController {
 
     private final AccountService accountService;

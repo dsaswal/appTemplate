@@ -3,6 +3,8 @@ package dev.dsa.api.controller;
 import dev.dsa.api.dto.ApiResponse;
 import dev.dsa.entity.Customer;
 import dev.dsa.service.CustomerService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +21,8 @@ import java.util.List;
 @RequestMapping("/api/customers")
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "Customers", description = "Customer management endpoints")
+@SecurityRequirement(name = "Bearer Authentication")
 public class CustomerApiController {
 
     private final CustomerService customerService;

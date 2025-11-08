@@ -3,6 +3,8 @@ package dev.dsa.api.controller;
 import dev.dsa.api.dto.ApiResponse;
 import dev.dsa.entity.Permission;
 import dev.dsa.service.RbacService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +18,8 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 @PreAuthorize("hasRole('ADMIN')")
+@Tag(name = "Permission Management", description = "Admin endpoints for managing permissions")
+@SecurityRequirement(name = "Bearer Authentication")
 public class PermissionApiController {
 
     private final RbacService rbacService;

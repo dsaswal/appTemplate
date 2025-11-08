@@ -3,6 +3,9 @@ package dev.dsa.api.controller;
 import dev.dsa.api.dto.ApiResponse;
 import dev.dsa.entity.User;
 import dev.dsa.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +19,8 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 @PreAuthorize("hasRole('ADMIN')")
+@Tag(name = "User Management", description = "Admin endpoints for managing users, roles, and permissions")
+@SecurityRequirement(name = "Bearer Authentication")
 public class UserApiController {
 
     private final UserService userService;
